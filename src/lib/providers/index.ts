@@ -22,8 +22,7 @@ export interface Provider {
   endpoint: string
   keyUrl: string
   call(key: string, payload: string, signal?: AbortSignal): Promise<LLMContactUpdate[]>
-  testKey(key: string): Promise<boolean>
-}
+  testKey(key: string): Promise<boolean>}
 
 export function stripFences(text: string): string {
   const m = /^\s*```(?:json)?\s*([\s\S]*?)\s*```\s*$/.exec(text)
@@ -41,7 +40,14 @@ export function parseUpdates(text: string): LLMContactUpdate[] {
 async function readResponseText(res: Response): Promise<string> {
   if (!res.ok) {
     const raw = await res.text().catch(() => '')
-    throw new ProviderError(`Provider returned HTTP ${res.status}`, { status: res.status, raw })
+    let detail = ''
+    try {
+      const parsed = JSON.parse(raw) as { error?: { message?: string } }
+      if (parsed?.error?.message) detail = `: ${parsed.error.message}`
+    } catch {
+      /* body was not JSON error shape — keep generic message */
+    }
+    throw new ProviderError(`Provider returned HTTP ${res.status}${detail}`, { status: res.status, raw })
   }
   return res.text()
 }
@@ -88,7 +94,11 @@ export const gemini: Provider = {
         generationConfig: { responseMimeType: 'application/json' }
       })
     })
-    return res.ok
+    if (!res.ok) {
+      const raw = await res.text().catch(() => '')
+      throw new ProviderError(`Provider returned HTTP ${res.status}`, { status: res.status, raw })
+    }
+    return true
   }
 }
 
@@ -146,7 +156,11 @@ function openAICompat(
           response_format: { type: 'json_object' }
         })
       })
-      return res.ok
+      if (!res.ok) {
+        const raw = await res.text().catch(() => '')
+        throw new ProviderError(`Provider returned HTTP ${res.status}`, { status: res.status, raw })
+      }
+      return true
     }
   }
 }

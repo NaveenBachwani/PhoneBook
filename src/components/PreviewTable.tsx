@@ -7,14 +7,24 @@ interface Props {
   mergeGroups: MergeGroup[]
   onCleanWithAI: () => void
   onManualPrompt: () => void
+  onBack: () => void
 }
 
-export default function PreviewTable({ contacts, mergeGroups, onCleanWithAI, onManualPrompt }: Props) {
+export default function PreviewTable({ contacts, mergeGroups, onCleanWithAI, onManualPrompt, onBack }: Props) {
   const mergedIds = new Set(mergeGroups.flatMap((g) => g.duplicateIds))
+  const actions = (
+    <div className="toolbar">
+      <button className="primary" onClick={onCleanWithAI}>
+        Clean with AI
+      </button>
+      <button onClick={onManualPrompt}>Get manual prompt (no AI key needed)</button>
+    </div>
+  )
 
   return (
     <section className="card">
       <h2>Preview — {contacts.length} contacts</h2>
+      {actions}
       {mergeGroups.length > 0 && (
         <p className="muted">
           {mergeGroups.length} duplicate group(s) found — these will be merged into one contact
@@ -67,11 +77,9 @@ export default function PreviewTable({ contacts, mergeGroups, onCleanWithAI, onM
       </details>
 
       <div className="toolbar">
-        <button className="primary" onClick={onCleanWithAI}>
-          Clean with AI
-        </button>
-        <button onClick={onManualPrompt}>Get manual prompt (no AI key needed)</button>
+        <button onClick={onBack}>← Choose a different file</button>
       </div>
+      {actions}
       <p className="muted">
         "Clean with AI" uses your own free AI key (next screen). "Manual prompt" gives you text to
         paste into any AI chatbot yourself.

@@ -119,6 +119,7 @@ export default function App() {
           mergeGroups={mergeGroups}
           onCleanWithAI={() => setScreen('keysetup')}
           onManualPrompt={handleManualPrompt}
+          onBack={() => setScreen('upload')}
         />
       )}
 

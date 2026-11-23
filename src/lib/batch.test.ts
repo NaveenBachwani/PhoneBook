@@ -170,11 +170,18 @@ describe('providers', () => {
     expect(updates[0].id).toBe(c.id)
   })
 
-  it('testKey reflects provider answer', async () => {
+  it('testKey passes a valid key and throws with status for a rejected one', async () => {
     mockFetch.mockResolvedValue(new Response('{}', { status: 200 }))
     expect(await gemini.testKey('good')).toBe(true)
     mockFetch.mockResolvedValue(new Response('denied', { status: 401 }))
-    expect(await gemini.testKey('bad')).toBe(false)
+    await expect(gemini.testKey('bad')).rejects.toMatchObject({ status: 401 })
+  })
+
+  it('testKey surfaces the model-unavailable case distinctly', async () => {
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({ error: { message: 'Model not found' } }), { status: 404 })
+    )
+    await expect(gemini.testKey('good')).rejects.toMatchObject({ status: 404 })
   })
 
   it('key formats accept real-shaped keys of varying length, reject other providers', () => {

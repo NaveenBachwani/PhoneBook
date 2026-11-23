@@ -42,11 +42,21 @@ export default function KeySetup({ onReady, onBack }: Props) {
       }
     } catch (err) {
       const status = (err as { status?: number }).status
-      setMessage(
-        status === 401 || status === 403
-          ? 'The provider rejected the key. If you restricted it to specific websites, allow this site.'
-          : "Couldn't reach the provider. Check your internet connection and try again."
-      )
+      if (status === 404 || status === 410) {
+        setMessage(
+          'The AI model this app uses is temporarily unavailable at the provider. This usually fixes itself with an app update — please try again later.'
+        )
+      } else if (status === 429) {
+        setMessage('The free tier is busy right now. Wait a minute and try again.')
+      } else if (status === 401 || status === 403) {
+        setMessage(
+          'The provider rejected the key. Double-check it, and if you restricted it to specific websites, make sure this site is allowed.'
+        )
+      } else if (status) {
+        setMessage(`The provider had a problem (error ${status}). Please try again in a moment.`)
+      } else {
+        setMessage("Couldn't reach the provider. Check your internet connection and try again.")
+      }
     } finally {
       setTesting(false)
     }

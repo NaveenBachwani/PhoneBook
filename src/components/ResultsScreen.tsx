@@ -38,6 +38,13 @@ export default function ResultsScreen({
   return (
     <>
       <section className="card">
+        <div className="toolbar" style={{ marginTop: 0 }}>
+          <button className="primary" onClick={() => downloadVcfFiles(contacts)}>
+            Download cleaned .vcf{fileNames.length > 1 ? ` (${fileNames.length} files)` : ''}
+          </button>
+          <button onClick={() => downloadCsv(contacts)}>Download CSV</button>
+          <button onClick={onShowImport}>Import instructions</button>
+        </div>
         <h2>Review your cleaned contacts</h2>
         {aborted && (
           <p className="badge warn" style={{ padding: '0.5rem 0.75rem' }}>
