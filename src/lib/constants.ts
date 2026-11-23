@@ -15,6 +15,7 @@ export const NOTE_SAFE_LENGTH = 1000
 // 'gemini-flash-latest' is Google's rolling alias that auto-tracks the current Flash model.
 export const GEMINI_MODEL = 'gemini-flash-latest'
 export const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
+export const GEMINI_MODELS_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 export const GROQ_MODEL = 'openai/gpt-oss-120b'
 export const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 export const OPENROUTER_MODEL = 'google/gemma-4-31b-it:free'

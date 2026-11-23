@@ -3,6 +3,15 @@
 Public-safe design decisions and judgments made while building Tier 1.
 Format: decision — reason. Newest first.
 
+- **Provider model IDs follow rolling aliases and are verified against live provider docs** —
+  the spec's `gemini-2.0-flash` was found shut down in production use (404 masquerading as a
+  "bad key"). Gemini now uses Google's `gemini-flash-latest` alias (auto-tracks the current
+  Flash model, 2-week email notice before swaps); Groq moved to `openai/gpt-oss-120b`
+  (`llama-3.3-70b-versatile` became Enterprise-gated for free plans); OpenRouter's default is
+  re-picked from the live `/api/v1/models` free list when it changes. Key-test failures are
+  status-aware (404 = model unavailable, 429 = free tier busy, 401/403 = key rejected) so a
+  dead model can never fake a bad key again.
+
 - **Independent audit pass before first release** — an adversarial review of the finished code
   (network egress, key handling, payload whitelist, retention invariants, crash paths) confirmed
   the privacy claims and drove hardening: duplicate merges now carry the duplicate's structured

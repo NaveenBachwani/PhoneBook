@@ -1,7 +1,16 @@
-import { GEMINI_ENDPOINT, GROQ_ENDPOINT, OPENROUTER_ENDPOINT, GROQ_MODEL, OPENROUTER_MODEL } from '../constants'
+import { GEMINI_ENDPOINT, GROQ_ENDPOINT, OPENROUTER_ENDPOINT, GROQ_MODEL, OPENROUTER_MODEL, GEMINI_MODELS_URL } from '../constants'
+import { egress } from '../egress'
 import type { LLMContactUpdate } from '../vcard/types'
 
 export type ProviderId = 'gemini' | 'openrouter' | 'groq'
+
+const TEST_TIMEOUT_MS = 8000
+const CALL_TIMEOUT_MS = 60000
+
+function withTimeout(signal: AbortSignal | undefined, ms: number): AbortSignal {
+  const timeout = AbortSignal.timeout(ms)
+  return signal ? AbortSignal.any([signal, timeout]) : timeout
+}
 
 export class ProviderError extends Error {
   status?: number
@@ -70,7 +79,7 @@ export const gemini: Provider = {
         contents: [{ parts: [{ text: payload }] }],
         generationConfig: { responseMimeType: 'application/json' }
       }),
-      signal
+      signal: withTimeout(signal, CALL_TIMEOUT_MS)
     })
     const text = await readResponseText(res)
     let content: string
@@ -86,13 +95,18 @@ export const gemini: Provider = {
     }
   },
   async testKey(key) {
-    const res = await fetch(GEMINI_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: 'Return exactly {"updates":[]}' }] }],
-        generationConfig: { responseMimeType: 'application/json' }
-      })
+    const res = await fetch(GEMINI_MODELS_URL, {
+      method: 'GET',
+      headers: { 'x-goog-api-key': key },
+      signal: withTimeout(undefined, TEST_TIMEOUT_MS)
+    })
+    egress.record({
+      provider: 'gemini',
+      endpoint: GEMINI_MODELS_URL,
+      requestBytes: 0,
+      contactsSent: 0,
+      fieldsStripped: [],
+      status: res.status
     })
     if (!res.ok) {
       const raw = await res.text().catch(() => '')
@@ -113,6 +127,7 @@ function openAICompat(
   model: string,
   keyFormat: RegExp,
   keyUrl: string,
+  keyCheckUrl: string,
   extraHeaders: Record<string, string> = {}
 ): Provider {
   return {
@@ -134,7 +149,7 @@ function openAICompat(
           messages: [{ role: 'user', content: payload }],
           response_format: { type: 'json_object' }
         }),
-        signal
+        signal: withTimeout(signal, CALL_TIMEOUT_MS)
       })
       const text = await readResponseText(res)
       try {
@@ -147,14 +162,18 @@ function openAICompat(
       }
     },
     async testKey(key) {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}`, ...extraHeaders },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: 'Return exactly {"updates":[]}' }],
-          response_format: { type: 'json_object' }
-        })
+      const res = await fetch(keyCheckUrl, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${key}` },
+        signal: withTimeout(undefined, TEST_TIMEOUT_MS)
+      })
+      egress.record({
+        provider: id,
+        endpoint: keyCheckUrl,
+        requestBytes: 0,
+        contactsSent: 0,
+        fieldsStripped: [],
+        status: res.status
       })
       if (!res.ok) {
         const raw = await res.text().catch(() => '')
@@ -171,7 +190,8 @@ export const groq: Provider = openAICompat(
   GROQ_ENDPOINT,
   GROQ_MODEL,
   GROQ_KEY_RE,
-  'https://console.groq.com/keys'
+  'https://console.groq.com/keys',
+  'https://api.groq.com/openai/v1/models'
 )
 
 export const openrouter: Provider = openAICompat(
@@ -181,6 +201,7 @@ export const openrouter: Provider = openAICompat(
   OPENROUTER_MODEL,
   OPENROUTER_KEY_RE,
   'https://openrouter.ai/keys',
+  'https://openrouter.ai/api/v1/key',
   { 'X-Title': 'PhoneBook Contact Cleaner' }
 )
 
