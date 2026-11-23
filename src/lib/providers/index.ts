@@ -1,9 +1,22 @@
-import { GEMINI_ENDPOINT, GROQ_ENDPOINT, OPENROUTER_ENDPOINT, GROQ_MODEL, OPENROUTER_MODEL, GEMINI_MODELS_URL } from '../constants'
+import {
+  GEMINI_ENDPOINT,
+  GEMINI_FALLBACK_MODELS,
+  GEMINI_MODELS_URL,
+  GEMINI_MODEL,
+  GROQ_ENDPOINT,
+  GROQ_FALLBACK_MODELS,
+  GROQ_MODEL,
+  OPENROUTER_ENDPOINT,
+  OPENROUTER_FALLBACK_MODELS,
+  OPENROUTER_MODEL
+} from '../constants'
 import { egress } from '../egress'
+import { STRIPPED_FIELDS } from '../prompt'
 import type { LLMContactUpdate } from '../vcard/types'
 
 export type ProviderId = 'gemini' | 'openrouter' | 'groq'
 
+const RETRYABLE_STATUS = new Set([429, 503, 404, 408])
 const TEST_TIMEOUT_MS = 8000
 const CALL_TIMEOUT_MS = 60000
 
@@ -30,8 +43,9 @@ export interface Provider {
   keyFormat: RegExp
   endpoint: string
   keyUrl: string
-  call(key: string, payload: string, signal?: AbortSignal): Promise<LLMContactUpdate[]>
-  testKey(key: string): Promise<boolean>}
+  call(key: string, payload: string, contactsSent: number, signal?: AbortSignal): Promise<LLMContactUpdate[]>
+  testKey(key: string): Promise<boolean>
+}
 
 export function stripFences(text: string): string {
   const m = /^\s*```(?:json)?\s*([\s\S]*?)\s*```\s*$/.exec(text)
@@ -61,38 +75,70 @@ async function readResponseText(res: Response): Promise<string> {
   return res.text()
 }
 
-const GEMINI_KEY_RE = /^AIza[A-Za-z0-9_-]{20,}$/
-const GROQ_KEY_RE = /^gsk_[A-Za-z0-9_-]{20,}$/
-const OPENROUTER_KEY_RE = /^sk-or-[A-Za-z0-9_-]{20,}$/
+function isAbort(err: unknown): boolean {
+  return (err as Error)?.name === 'AbortError'
+}
+
+const encoder = new TextEncoder()
 
 export const gemini: Provider = {
   id: 'gemini',
   label: 'Google Gemini',
-  keyFormat: GEMINI_KEY_RE,
+  keyFormat: /^AIza[A-Za-z0-9_-]{20,}$/,
   endpoint: GEMINI_ENDPOINT,
   keyUrl: 'https://aistudio.google.com/app/apikey',
-  async call(key, payload, signal) {
-    const res = await fetch(GEMINI_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: payload }] }],
-        generationConfig: { responseMimeType: 'application/json' }
-      }),
-      signal: withTimeout(signal, CALL_TIMEOUT_MS)
-    })
-    const text = await readResponseText(res)
-    let content: string
-    try {
-      const wire = JSON.parse(text) as {
-        candidates?: { content?: { parts?: { text?: string }[] } }[]
+  async call(key, payload, contactsSent, signal) {
+    const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS]
+    let lastError: ProviderError | undefined
+    for (const model of models) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: payload }] }],
+            generationConfig: { responseMimeType: 'application/json' }
+          }),
+          signal: withTimeout(signal, CALL_TIMEOUT_MS)
+        })
+        const text = await readResponseText(res)
+        let updates: LLMContactUpdate[]
+        try {
+          const wire = JSON.parse(text) as {
+            candidates?: { content?: { parts?: { text?: string }[] } }[]
+          }
+          const content = wire.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
+          updates = parseUpdates(content)
+        } catch (err) {
+          if (err instanceof ProviderError) throw err
+          throw new ProviderError('The AI returned an unreadable response', { raw: text })
+        }
+        egress.record({
+          provider: 'gemini',
+          endpoint,
+          requestBytes: encoder.encode(payload).length,
+          contactsSent,
+          fieldsStripped: [...STRIPPED_FIELDS],
+          status: res.status
+        })
+        return updates
+      } catch (err) {
+        if (isAbort(err)) throw err
+        lastError = err instanceof ProviderError ? err : new ProviderError(`Unexpected error: ${String(err)}`)
+        egress.record({
+          provider: 'gemini',
+          endpoint,
+          requestBytes: encoder.encode(payload).length,
+          contactsSent,
+          fieldsStripped: [...STRIPPED_FIELDS],
+          status: lastError.status ?? 0
+        })
+        if (!lastError.status || !RETRYABLE_STATUS.has(lastError.status)) throw lastError
       }
-      content = wire.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? ''
-      return parseUpdates(content)
-    } catch (err) {
-      if (err instanceof ProviderError) throw err
-      throw new ProviderError('The AI returned an unreadable response', { raw: text })
     }
+    throw lastError ?? new ProviderError('Provider unavailable')
   },
   async testKey(key) {
     const res = await fetch(GEMINI_MODELS_URL, {
@@ -124,7 +170,7 @@ function openAICompat(
   id: ProviderId,
   label: string,
   endpoint: string,
-  model: string,
+  models: string[],
   keyFormat: RegExp,
   keyUrl: string,
   keyCheckUrl: string,
@@ -136,30 +182,60 @@ function openAICompat(
     keyFormat,
     endpoint,
     keyUrl,
-    async call(key, payload, signal) {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${key}`,
-          ...extraHeaders
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: payload }],
-          response_format: { type: 'json_object' }
-        }),
-        signal: withTimeout(signal, CALL_TIMEOUT_MS)
-      })
-      const text = await readResponseText(res)
-      try {
-        const wire = JSON.parse(text) as { choices?: OpenAIChoice[] }
-        const content = wire.choices?.[0]?.message?.content ?? ''
-        return parseUpdates(content)
-      } catch (err) {
-        if (err instanceof ProviderError) throw err
-        throw new ProviderError('The AI returned an unreadable response', { raw: text })
+    async call(key, payload, contactsSent, signal) {
+      const requestBytes = encoder.encode(payload).length
+      let lastError: ProviderError | undefined
+      for (const model of models) {
+        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${key}`,
+              ...extraHeaders
+            },
+            body: JSON.stringify({
+              model,
+              messages: [{ role: 'user', content: payload }],
+              response_format: { type: 'json_object' }
+            }),
+            signal: withTimeout(signal, CALL_TIMEOUT_MS)
+          })
+          const text = await readResponseText(res)
+          let updates: LLMContactUpdate[]
+          try {
+            const wire = JSON.parse(text) as { choices?: OpenAIChoice[] }
+            const content = wire.choices?.[0]?.message?.content ?? ''
+            updates = parseUpdates(content)
+          } catch (err) {
+            if (err instanceof ProviderError) throw err
+            throw new ProviderError('The AI returned an unreadable response', { raw: text })
+          }
+          egress.record({
+            provider: id,
+            endpoint,
+            requestBytes,
+            contactsSent,
+            fieldsStripped: [...STRIPPED_FIELDS],
+            status: res.status
+          })
+          return updates
+        } catch (err) {
+          if (isAbort(err)) throw err
+          lastError = err instanceof ProviderError ? err : new ProviderError(`Unexpected error: ${String(err)}`)
+          egress.record({
+            provider: id,
+            endpoint,
+            requestBytes,
+            contactsSent,
+            fieldsStripped: [...STRIPPED_FIELDS],
+            status: lastError.status ?? 0
+          })
+          if (!lastError.status || !RETRYABLE_STATUS.has(lastError.status)) throw lastError
+        }
       }
+      throw lastError ?? new ProviderError('Provider unavailable')
     },
     async testKey(key) {
       const res = await fetch(keyCheckUrl, {
@@ -188,8 +264,8 @@ export const groq: Provider = openAICompat(
   'groq',
   'Groq',
   GROQ_ENDPOINT,
-  GROQ_MODEL,
-  GROQ_KEY_RE,
+  [GROQ_MODEL, ...GROQ_FALLBACK_MODELS],
+  /^gsk_[A-Za-z0-9_-]{20,}$/,
   'https://console.groq.com/keys',
   'https://api.groq.com/openai/v1/models'
 )
@@ -198,8 +274,8 @@ export const openrouter: Provider = openAICompat(
   'openrouter',
   'OpenRouter',
   OPENROUTER_ENDPOINT,
-  OPENROUTER_MODEL,
-  OPENROUTER_KEY_RE,
+  [OPENROUTER_MODEL, ...OPENROUTER_FALLBACK_MODELS],
+  /^sk-or-[A-Za-z0-9_-]{20,}$/,
   'https://openrouter.ai/keys',
   'https://openrouter.ai/api/v1/key',
   { 'X-Title': 'PhoneBook Contact Cleaner' }

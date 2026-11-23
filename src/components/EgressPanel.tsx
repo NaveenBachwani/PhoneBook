@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { egress } from '../lib/egress'
 
 export default function EgressPanel() {
   const [open, setOpen] = useState(false)
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 1000)
+    return () => clearInterval(t)
+  }, [])
+
   const entries = egress.entries()
   const summary = egress.summary()
   const lastPayload = egress.lastPayload()

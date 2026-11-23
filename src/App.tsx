@@ -24,6 +24,7 @@ export default function App() {
   const [mergeGroups, setMergeGroups] = useState<MergeGroup[]>([])
   const [providerId, setProviderId] = useState<ProviderId | null>(null)
   const [progress, setProgress] = useState({ done: 0, total: 0 })
+  const [batchInfo, setBatchInfo] = useState<string | null>(null)
   const [failures, setFailures] = useState<BatchFailure[]>([])
   const [suggestions, setSuggestions] = useState<NoteSuggestion[]>([])
   const [aborted, setAborted] = useState(false)
@@ -58,14 +59,18 @@ export default function App() {
     setProviderId(id)
     setScreen('cleaning')
     setProgress({ done: 0, total: contacts.length })
+    setBatchInfo(null)
     setFailures([])
     setAborted(false)
     const controller = new AbortController()
     abortRef.current = controller
     const result = await runBatch(contacts, provider, key, {
       signal: controller.signal,
-      onProgress: (done, total) => setProgress({ done, total })
+      onProgress: (done, total) => setProgress({ done, total }),
+      onBatchStart: (batch, totalBatches) =>
+        setBatchInfo(`Contacting the AI — batch ${batch} of ${totalBatches}`)
     })
+    setBatchInfo(null)
     const { contacts: cleaned, suggestions: sugg } = applyUpdates(contacts, result.updates)
     setContacts(cleaned)
     setSuggestions(sugg)
@@ -131,7 +136,7 @@ export default function App() {
         <>
           <section className="card">
             <h2>Cleaning your contacts…</h2>
-            <ProgressBar done={progress.done} total={progress.total} />
+            <ProgressBar done={progress.done} total={progress.total} batchInfo={batchInfo} />
             <button className="danger" onClick={() => abortRef.current?.abort()}>
               Stop
             </button>

@@ -69,7 +69,7 @@ export default function ResultsScreen({
         )}
 
         <div style={{ overflowX: 'auto' }}>
-          <table>
+          <table className="results-table">
             <thead>
               <tr>
                 <th>Name</th>

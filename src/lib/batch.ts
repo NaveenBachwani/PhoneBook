@@ -1,11 +1,9 @@
 import type { Contact, LLMContactUpdate } from './vcard/types'
 import type { Provider } from './providers'
 import { ProviderError } from './providers'
-import { buildPayload, STRIPPED_FIELDS } from './prompt'
+import { buildPayload } from './prompt'
 import { egress } from './egress'
 import { BATCH_SIZE, BATCH_DELAY_MS, MAX_RETRIES, BACKOFF_BASE_MS, BACKOFF_MAX_MS } from './constants'
-
-const encoder = new TextEncoder()
 
 export interface BatchFailure {
   batch: number
@@ -21,6 +19,7 @@ export interface BatchResult {
 
 export interface RunBatchOptions {
   onProgress?: (done: number, total: number) => void
+  onBatchStart?: (batchIndex: number, totalBatches: number) => void
   signal?: AbortSignal
   delayMs?: number
   batchSize?: number
@@ -72,7 +71,6 @@ async function callWithRetry(
   provider: Provider,
   key: string,
   payload: string,
-  requestBytes: number,
   contactsSent: number,
   signal?: AbortSignal,
   backoffBaseMs = BACKOFF_BASE_MS
@@ -81,31 +79,15 @@ async function callWithRetry(
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (signal?.aborted) return { aborted: true }
     try {
-      const updates = await provider.call(key, payload, signal)
-      egress.record({
-        provider: provider.id,
-        endpoint: provider.endpoint,
-        requestBytes,
-        contactsSent,
-        fieldsStripped: [...STRIPPED_FIELDS],
-        status: 200
-      })
+      const updates = await provider.call(key, payload, contactsSent, signal)
       return { updates, aborted: false }
     } catch (err) {
       if (signal?.aborted || (err as Error).name === 'AbortError') return { aborted: true }
       const e =
         err instanceof ProviderError ? err : new ProviderError(`Unexpected error: ${String(err)}`)
-      egress.record({
-        provider: provider.id,
-        endpoint: provider.endpoint,
-        requestBytes,
-        contactsSent,
-        fieldsStripped: [...STRIPPED_FIELDS],
-        status: e.status ?? 0
-      })
-      const retriesAllowed = e.status === 429 ? MAX_RETRIES : 1
-      if (attempt < retriesAllowed) {
-        await sleep(e.status === 429 ? backoffMs(attempt, backoffBaseMs) : 500, signal)
+      const retryable = (e.status === 429 || e.status === 503) && maxAttempts > 1
+      if (attempt < (e.status === 429 || e.status === 503 ? MAX_RETRIES : 1)) {
+        await sleep(retryable ? backoffMs(attempt, backoffBaseMs) : 500, signal)
         continue
       }
       return { error: e, aborted: false }
@@ -136,13 +118,12 @@ export async function runBatch(
     }
     const batch = chunks[i]
     const payload = buildPayload(batch)
-    const requestBytes = encoder.encode(payload).length
     egress.recordPayload(payload)
+    opts.onBatchStart?.(i + 1, chunks.length)
     const outcome = await callWithRetry(
       provider,
       key,
       payload,
-      requestBytes,
       batch.length,
       opts.signal,
       opts.backoffBaseMs

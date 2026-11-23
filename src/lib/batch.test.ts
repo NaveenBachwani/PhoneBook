@@ -165,9 +165,26 @@ describe('providers', () => {
     mockFetch.mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: fenced } }] }), { status: 200 })
     )
-    const updates = await openrouter.call('k', '{}')
+    const updates = await openrouter.call('k', '{}', 0)
     expect(updates).toHaveLength(1)
     expect(updates[0].id).toBe(c.id)
+  })
+
+  it('falls back to the next model on overload (503)', async () => {
+    const c = makeContact()
+    mockFetch
+      .mockImplementationOnce(() =>
+        new Response(
+          JSON.stringify({ error: { message: 'This model is currently experiencing high demand.' } }),
+          { status: 503 }
+        )
+      )
+      .mockImplementationOnce(() => new Response(wireGemini([updateFor(c)]), { status: 200 }))
+    const updates = await gemini.call('k', '{}', 1)
+    expect(updates).toHaveLength(1)
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    expect(egress.entries().map((e) => e.status)).toEqual([503, 200])
+    expect(egress.entries()[1].endpoint).toContain('gemini-flash-latest')
   })
 
   it('testKey passes a valid key and throws with status for a rejected one', async () => {

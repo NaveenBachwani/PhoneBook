@@ -116,3 +116,14 @@ ol.steps li { margin-bottom: 0.4rem; }
 
 .row-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 0.75rem 0; }
+
+.results-table th, .results-table td { word-break: break-word; }
+.results-table th:first-child, .results-table td:first-child { min-width: 180px; }
+.results-table th:last-child, .results-table td:last-child {
+  position: sticky;
+  right: 0;
+  background: var(--card);
+  box-shadow: -8px 0 8px -8px rgba(15, 23, 42, 0.25);
+  min-width: 90px;
+  white-space: nowrap;
+}
