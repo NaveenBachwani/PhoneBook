@@ -17,8 +17,17 @@ export default function KeySetup({ onReady, onBack }: Props) {
 
   async function testAndContinue() {
     const trimmed = key.trim()
-    if (!provider.keyFormat.test(trimmed)) {
-      setMessage('That does not look like a valid key for this provider. Double-check and paste it again.')
+    if (trimmed.length < 20) {
+      setMessage('That key looks too short to be valid. Double-check that the whole key was pasted.')
+      return
+    }
+    const otherProvider = (Object.values(PROVIDERS) as (typeof provider)[]).find(
+      (p) => p.id !== providerId && p.keyFormat.test(trimmed)
+    )
+    if (otherProvider) {
+      setMessage(
+        `That looks like a ${otherProvider.label} key, but ${provider.label} is selected. Switch provider above, or paste the ${provider.label} key.`
+      )
       return
     }
     setTesting(true)

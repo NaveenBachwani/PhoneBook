@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { runBatch, validateUpdates } from './batch'
 import { egress } from './egress'
-import { gemini, openrouter } from './providers'
+import { gemini, groq, openrouter } from './providers'
 import { buildPayload, SYSTEM_PROMPT } from './prompt'
 import type { Contact, LLMContactUpdate } from './vcard/types'
 
@@ -175,5 +175,14 @@ describe('providers', () => {
     expect(await gemini.testKey('good')).toBe(true)
     mockFetch.mockResolvedValue(new Response('denied', { status: 401 }))
     expect(await gemini.testKey('bad')).toBe(false)
+  })
+
+  it('key formats accept real-shaped keys of varying length, reject other providers', () => {
+    expect(gemini.keyFormat.test('AIza' + 'A'.repeat(35))).toBe(true)
+    expect(gemini.keyFormat.test('AIza' + 'A'.repeat(25))).toBe(true)
+    expect(gemini.keyFormat.test('AIzaSyA-short')).toBe(false)
+    expect(gemini.keyFormat.test('gsk_' + 'k'.repeat(30))).toBe(false)
+    expect(groq.keyFormat.test('gsk_' + 'k'.repeat(30))).toBe(true)
+    expect(openrouter.keyFormat.test('sk-or-v1-' + 'k'.repeat(30))).toBe(true)
   })
 })

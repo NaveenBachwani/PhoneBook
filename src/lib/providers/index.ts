@@ -46,9 +46,9 @@ async function readResponseText(res: Response): Promise<string> {
   return res.text()
 }
 
-const GEMINI_KEY_RE = /^AIza[0-9A-Za-z_-]{35}$/
-const GROQ_KEY_RE = /^gsk_[A-Za-z0-9]{20,}$/
-const OPENROUTER_KEY_RE = /^sk-or-[A-Za-z0-9-]{20,}$/
+const GEMINI_KEY_RE = /^AIza[A-Za-z0-9_-]{20,}$/
+const GROQ_KEY_RE = /^gsk_[A-Za-z0-9_-]{20,}$/
+const OPENROUTER_KEY_RE = /^sk-or-[A-Za-z0-9_-]{20,}$/
 
 export const gemini: Provider = {
   id: 'gemini',
