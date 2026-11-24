@@ -7,7 +7,7 @@ Mechanism: git `pre-commit` hook → `utilities/safety/code_quality_lint.sh --st
 
 | Gate | Scope | Where |
 |---|---|---|
-| Privacy scan | all staged files — blocks private-repo references | token list in the script |
+| Privacy scan | all staged files - blocks private-repo references | token list in the script |
 | ESLint | staged `.ts/.tsx/.js/.jsx` files | `eslint.config.js` (flat config) |
 | TypeScript | whole project (`tsc --noEmit`) | `tsconfig.json` (strict) |
 | Full sweep (`--all`) | privacy scan + eslint . + tsc + vitest | before proposing a commit |
@@ -36,4 +36,4 @@ utilities/safety/code_quality_lint.sh --all   # full gate before proposing a com
 ```
 
 Pre-commit runs `--staged` automatically: ESLint on staged JS/TS files plus a
-typecheck. If it blocks a commit, fix the findings — do not skip the hook.
+typecheck. If it blocks a commit, fix the findings - do not skip the hook.

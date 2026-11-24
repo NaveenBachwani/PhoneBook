@@ -11,7 +11,7 @@ export const EXPORT_MAX_CONTACTS = 3000
 export const EXPORT_MAX_BYTES = 20 * 1024 * 1024
 export const NOTE_SAFE_LENGTH = 1000
 
-// Model IDs rotate often — these are checked against provider docs when touched.
+// Model IDs rotate often - these are checked against provider docs when touched.
 // Primary models favor high-throughput, low-demand models for free-tier reliability.
 // On overload (503/429) or retirement (404), providers fall back to the next model.
 export const GEMINI_MODEL = 'gemini-3.5-flash-lite'

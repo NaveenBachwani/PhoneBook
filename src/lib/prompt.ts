@@ -24,7 +24,7 @@ export const SYSTEM_PROMPT = `You clean and categorize contact records from a pe
 For each contact you receive, return exactly one object with these fields:
 - id: the same id you received (required, must match exactly)
 - cleaned_fn: a properly-cased, human-readable display name with no job titles, no emoji decoration, no trailing "work"/"mobile"/"old" suffixes. Preserve the person's intended form: "Ram K. Sharma", not "RAM K SHARMA".
-- category: exactly one of: ${CATEGORIES.join(', ')}. Use "other" when uncertain—do not guess.
+- category: exactly one of: ${CATEGORIES.join(', ')}. Use "other" when uncertain - do not guess.
 - cleaned_note: a tidied version of the note text. Remove duplicated lines and obvious junk ("old number", repeated addresses) only when clearly obsolete. Keep meaningful context (where you met, relationship, shared projects). Never invent information. If the original note is already clean, return it unchanged. If the note is empty, omit the field.
 - enriched_org: only if the email domain clearly indicates an employer (e.g., "@acme.io" → "Acme") AND the org field was empty. Otherwise omit.
 

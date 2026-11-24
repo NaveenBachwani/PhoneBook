@@ -14,6 +14,8 @@ import ProgressBar from './components/ProgressBar'
 import EgressPanel from './components/EgressPanel'
 import ResultsScreen from './components/ResultsScreen'
 import ImportInstructions from './components/ImportInstructions'
+import Brand from './components/Brand'
+import Footer from './components/Footer'
 
 type Screen = 'upload' | 'preview' | 'keysetup' | 'cleaning' | 'results' | 'import'
 
@@ -68,7 +70,7 @@ export default function App() {
       signal: controller.signal,
       onProgress: (done, total) => setProgress({ done, total }),
       onBatchStart: (batch, totalBatches) =>
-        setBatchInfo(`Contacting the AI — batch ${batch} of ${totalBatches}`)
+        setBatchInfo(`Contacting the AI - batch ${batch} of ${totalBatches}`)
     })
     setBatchInfo(null)
     const { contacts: cleaned, suggestions: sugg } = applyUpdates(contacts, result.updates)
@@ -115,8 +117,10 @@ export default function App() {
   }
 
   return (
-    <main>
-      {screen === 'upload' && <UploadScreen onParsed={handleParsed} />}
+    <>
+      <main>
+        <Brand />
+        {screen === 'upload' && <UploadScreen onParsed={handleParsed} />}
 
       {screen === 'preview' && (
         <PreviewTable
@@ -165,7 +169,9 @@ export default function App() {
         </>
       )}
 
-      {screen === 'import' && <ImportInstructions onStartOver={handleStartOver} />}
-    </main>
+        {screen === 'import' && <ImportInstructions onStartOver={handleStartOver} />}
+      </main>
+      <Footer />
+    </>
   )
 }

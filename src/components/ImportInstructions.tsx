@@ -8,20 +8,20 @@ export default function ImportInstructions({ onStartOver }: Props) {
       <section className="card">
         <h2>Import into Google Contacts</h2>
         <div className="privacy">
-          <strong>Step 0 — keep a backup first.</strong> On contacts.google.com: use the
+          <strong>Step 0 - keep a backup first.</strong> On contacts.google.com: use the
           <strong> Export</strong> control (the upward-arrow button at the top of your contacts
           list) → export ALL contacts as vCard. Save that file somewhere safe. If anything looks
           wrong after importing, that backup is your way back.
         </div>
         <ol className="steps">
           <li>Open <a href="https://contacts.google.com" target="_blank" rel="noreferrer">contacts.google.com</a> on your computer.</li>
-          <li>Click <strong>Import</strong> — at the top of your contacts list, or in the left sidebar depending on the layout.</li>
+          <li>Click <strong>Import</strong> - at the top of your contacts list, or in the left sidebar depending on the layout.</li>
           <li>Select the cleaned file you just downloaded (e.g. contacts-cleaned.vcf).</li>
           <li>Click <strong>Import</strong>.</li>
         </ol>
         <p className="muted">
           Google limits imports to 3,000 contacts per file and 20 MB per file. If your list is
-          larger, the app already split it into multiple files — import them one after another.
+          larger, the app already split it into multiple files - import them one after another.
         </p>
       </section>
 
@@ -29,7 +29,7 @@ export default function ImportInstructions({ onStartOver }: Props) {
         <h2>Good to know before you import</h2>
         <ul>
           <li>
-            <strong>Importing adds contacts — it never overwrites.</strong> Your cleaned contacts
+            <strong>Importing adds contacts - it never overwrites.</strong> Your cleaned contacts
             will appear <em>alongside</em> your existing ones, not replace them.
           </li>
           <li>
@@ -52,7 +52,7 @@ export default function ImportInstructions({ onStartOver }: Props) {
             <strong> Delete</strong>. They move to Trash.
           </li>
           <li>
-            <strong>Restore anything else:</strong> Trash keeps deleted contacts for 30 days —
+            <strong>Restore anything else:</strong> Trash keeps deleted contacts for 30 days - 
             select and "Recover" if something important landed there by accident.
           </li>
           <li>

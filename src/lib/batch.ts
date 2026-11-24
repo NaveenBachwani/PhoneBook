@@ -146,7 +146,7 @@ export async function runBatch(
     if (missingIds.length) {
       failures.push({
         batch: i,
-        reason: `Provider omitted ${missingIds.length} contact(s) — they will be left unchanged`
+        reason: `Provider omitted ${missingIds.length} contact(s) - they will be left unchanged`
       })
     }
     processed += batch.length

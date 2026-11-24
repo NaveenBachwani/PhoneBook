@@ -1,6 +1,7 @@
 import type { Contact } from '../lib/vcard/types'
 import type { MergeGroup } from '../lib/vcard/dedupe'
 import { buildPayload } from '../lib/prompt'
+import InfoTip from './InfoTip'
 
 interface Props {
   contacts: Contact[]
@@ -23,11 +24,12 @@ export default function PreviewTable({ contacts, mergeGroups, onCleanWithAI, onM
 
   return (
     <section className="card">
-      <h2>Preview — {contacts.length} contacts</h2>
+      <h2>Preview - {contacts.length} contacts</h2>
+      <InfoTip />
       {actions}
       {mergeGroups.length > 0 && (
         <p className="muted">
-          {mergeGroups.length} duplicate group(s) found — these will be merged into one contact
+          {mergeGroups.length} duplicate group(s) found - these will be merged into one contact
           (nothing is deleted: phones, emails and notes from both are kept).
         </p>
       )}
@@ -57,7 +59,7 @@ export default function PreviewTable({ contacts, mergeGroups, onCleanWithAI, onM
                 <td className="muted">
                   {c.notes.length
                     ? c.notes.join(' ').slice(0, 60) + (c.notes.join(' ').length > 60 ? '…' : '')
-                    : '—'}
+                    : '-'}
                 </td>
               </tr>
             ))}

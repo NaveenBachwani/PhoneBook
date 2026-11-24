@@ -11,7 +11,7 @@ const domains = ['acme.io', 'example.org', 'shop.local', 'clinic.example']
 const notes = [
   'Met at the 2019 conference in Bangalore.\\nOffice shifted to Whitefield in 2021.',
   'School friend. Loves trekking. Old number discontinued.',
-  'Doctor — clinic on MG Road, Tue/Fri only.',
+  'Doctor - clinic on MG Road, Tue/Fri only.',
   ''
 ]
 const cats = ['friend', 'work', 'medical', 'family']

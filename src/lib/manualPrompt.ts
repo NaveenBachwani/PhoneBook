@@ -7,7 +7,7 @@ export function buildManualPrompt(contacts: Contact[], perBatch = 15): string {
   const sections = batches.map((batch, i) => {
     const lines = batch.map((c) => JSON.stringify(toPayloadContact(c)))
     return [
-      `=== Batch ${i + 1} of ${batches.length} — paste this into your AI chatbot ===`,
+      `=== Batch ${i + 1} of ${batches.length} - paste this into your AI chatbot ===`,
       SYSTEM_PROMPT,
       'Contacts:',
       lines.join('\n')

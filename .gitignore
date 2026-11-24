@@ -1,7 +1,8 @@
 node_modules/
 dist/
 AGENTS.md
-docs/internal/
+/private/
+/plans/
 .env
 .env.*
 *.log

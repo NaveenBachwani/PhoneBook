@@ -333,7 +333,7 @@ export function parseVCard(text: string): ParseResult {
     const upper = trimmed.toUpperCase()
     if (upper === 'BEGIN:VCARD') {
       if (current) {
-        errors.push({ line, message: 'Nested BEGIN:VCARD — previous card had no END, parsed anyway' })
+        errors.push({ line, message: 'Nested BEGIN:VCARD - previous card had no END, parsed anyway' })
         contacts.push(parseContact(current, errors))
       }
       current = []
@@ -348,14 +348,14 @@ export function parseVCard(text: string): ParseResult {
     if (!current) continue
     const prop = splitPropLine(trimmed)
     if (!prop) {
-      errors.push({ line, message: 'Unrecognized line — preserved verbatim' })
+      errors.push({ line, message: 'Unrecognized line - preserved verbatim' })
       current.push({ group: undefined, name: 'X-UNPARSED', nameRaw: 'X-UNPARSED', paramText: '', value: trimmed, line })
       continue
     }
     current.push({ ...prop, line })
   }
   if (current) {
-    errors.push({ line: 0, message: 'Card missing END:VCARD — parsed anyway' })
+    errors.push({ line: 0, message: 'Card missing END:VCARD - parsed anyway' })
     contacts.push(parseContact(current, errors))
   }
   return { contacts, errors }

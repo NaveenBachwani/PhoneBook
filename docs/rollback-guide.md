@@ -1,11 +1,11 @@
-# Rollback guide — undoing a PhoneBook import
+# Rollback guide - undoing a PhoneBook import
 
 Keep this next to you when importing. Total time: 2 minutes.
 
 ## Before you import (the 30-second safety net)
 
 1. Open [contacts.google.com](https://contacts.google.com) on your computer.
-2. On the Contacts list screen, use the **Export** control — look for the **upward-arrow button**
+2. On the Contacts list screen, use the **Export** control - look for the **upward-arrow button**
    at the top of your contacts list (older layouts have Export in the left sidebar).
 3. Choose **All contacts** → format **vCard** → Export.
 4. Keep that file somewhere safe (it downloads as `contacts.vcf` or similar).
@@ -16,17 +16,17 @@ this file cannot fix it.
 ## Good to know
 
 **Importing never overwrites or deletes anything.** Google import *adds* new contacts alongside
-your existing ones. A bad import means "some duplicate contacts appeared" — not "my contacts are
+your existing ones. A bad import means "some duplicate contacts appeared" - not "my contacts are
 gone".
 
 ## Undo an import (it didn't look right)
 
 1. Open [contacts.google.com](https://contacts.google.com).
-2. In the Contacts list, find the contacts you just imported — sort or scroll to them. Select
+2. In the Contacts list, find the contacts you just imported - sort or scroll to them. Select
    them (hover → check the box; or click the top checkbox to select all, then deselect the ones
    that were already there).
 3. Click the **three-dot menu** (or the trash icon) → **Delete**.
-4. The deleted contacts move to **Trash** — they are recoverable for 30 days.
+4. The deleted contacts move to **Trash** - they are recoverable for 30 days.
 
 ## Restore something that vanished
 

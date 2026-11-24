@@ -36,7 +36,7 @@ beforeEach(() => {
 })
 
 describe('buildPayload (field stripping)', () => {
-  it('sends only id, name, org, title, emails, note — never phones/addresses/bday/photo', () => {
+  it('sends only id, name, org, title, emails, note - never phones/addresses/bday/photo', () => {
     const c = makeContact({
       fn: 'Ram Sharma',
       phones: [{ value: '+91 98765 43210' }],

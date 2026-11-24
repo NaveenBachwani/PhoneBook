@@ -12,12 +12,15 @@
 > For more advanced ideas, decisions and lessons from building with AI:
 > Project KnowHow @ <http://knowhow.thinkshop.in>
 
-Clean up and enrich a Google Contacts export on your own computer — free, private, no sign-up.
+Clean up and enrich a Google Contacts export on your own computer - free, private, no sign-up.
 
 PhoneBook reads the `.vcf` file you export from [contacts.google.com](https://contacts.google.com),
 fixes messy names, suggests categories (family / friend / work / medical / …), tidies duplicate
 junk in notes, and gives you a clean file to import back. Your AI account (Gemini, Groq or
-OpenRouter) does the thinking — you bring your own free API key.
+OpenRouter) does the thinking - you bring your own free API key.
+
+**New here? Read the [Getting started guide](docs/GETTING_STARTED.md)** - exactly what cleaning
+changes, what it never touches, and how to undo things.
 
 ## Privacy, in plain words
 
@@ -25,7 +28,7 @@ OpenRouter) does the thinking — you bring your own free API key.
 - When you choose "Clean with AI", **names, emails and notes** are sent directly from your browser
   to the AI provider you picked. **Phones, addresses, birthdays and photos are not sent.**
 - Your API key stays in this browser tab's memory and is forgotten when you close the tab.
-- Every request is logged in an "Egress" panel you can open at any time — nothing hidden.
+- Every request is logged in an "Egress" panel you can open at any time - nothing hidden.
 - Your existing notes and tags are **kept by default**. A tidier AI version of a note applies
   only when you click to accept it (and you can revert until download); anything new the AI adds
   is placed under a dated "Added by PhoneBook" marker; and you review every change before
@@ -34,14 +37,14 @@ OpenRouter) does the thinking — you bring your own free API key.
 ## How to use it
 
 1. Open the app in your browser.
-2. Export contacts from [contacts.google.com](https://contacts.google.com) — click the **Export**
+2. Export contacts from [contacts.google.com](https://contacts.google.com) - click the **Export**
    button (the upward-arrow icon at the top of your contacts list; older layouts have it in the
-   left sidebar) and choose **vCard (.vcf)** format — not Google CSV.
+   left sidebar) and choose **vCard (.vcf)** format - not Google CSV.
 3. Drop the `.vcf` file into PhoneBook and preview what was found.
-4. Get a free API key (Gemini is the easiest — the app links you to it), paste it in.
+4. Get a free API key (Gemini is the easiest - the app links you to it), paste it in.
 5. Click **Clean with AI**. Review the results, undo anything you disagree with.
 6. Download the cleaned `.vcf` and import it back at contacts.google.com.
-   The app walks you through it — including how to keep a backup first and how to undo.
+   The app walks you through it - including how to keep a backup first and how to undo.
 
 ## For developers
 
@@ -58,5 +61,5 @@ npm run build    # production build into dist/
 
 ## License
 
-[AGPL-3.0](LICENSE) — free to use and modify; modifications offered as a network service must
+[AGPL-3.0](LICENSE) - free to use and modify; modifications offered as a network service must
 share their source. The author retains the right to license the code on other terms.

@@ -68,7 +68,7 @@ async function readResponseText(res: Response): Promise<string> {
       const parsed = JSON.parse(raw) as { error?: { message?: string } }
       if (parsed?.error?.message) detail = `: ${parsed.error.message}`
     } catch {
-      /* body was not JSON error shape — keep generic message */
+      /* body was not JSON error shape - keep generic message */
     }
     throw new ProviderError(`Provider returned HTTP ${res.status}${detail}`, { status: res.status, raw })
   }

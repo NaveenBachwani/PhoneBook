@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { parseVCard } from '../lib/vcard/parse'
 import type { ParseResult } from '../lib/vcard/types'
+import InfoTip from './InfoTip'
 
 interface Props {
   onParsed: (result: ParseResult) => void
@@ -35,7 +36,7 @@ export default function UploadScreen({ onParsed }: Props) {
     <section className="card">
       <h1>Clean up your Google Contacts</h1>
       <p className="muted">
-        Fixes messy names, suggests categories, tidies duplicate junk in notes — then gives you a
+        Fixes messy names, suggests categories, tidies duplicate junk in notes - then gives you a
         clean file to import back.
       </p>
       <div className="privacy">
@@ -43,6 +44,7 @@ export default function UploadScreen({ onParsed }: Props) {
         When you later run <strong>Clean with AI</strong>, names, emails and notes go directly to the
         AI provider you choose; phones, addresses and photos do not.
       </div>
+      <InfoTip />
       <div
         className={`dropzone${dragOver ? ' active' : ''}`}
         onClick={() => inputRef.current?.click()}
@@ -80,7 +82,7 @@ export default function UploadScreen({ onParsed }: Props) {
           <p>
             Found <strong>{result.contacts.length}</strong> contacts.
             {result.errors.length > 0 && (
-              <> {result.errors.length} line(s) could not be understood — they will be preserved unchanged.</>
+              <> {result.errors.length} line(s) could not be understood - they will be preserved unchanged.</>
             )}
           </p>
           <button className="primary" onClick={() => onParsed(result)}>

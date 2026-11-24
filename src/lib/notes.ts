@@ -17,6 +17,6 @@ export function appendNewInfo(originalNote: string, additions: string): string {
 
 export function noteLengthWarning(note: string, limit = 1000): string | undefined {
   return note.length > limit
-    ? `This note is ${note.length} characters. Google may truncate notes around 1,024 characters on import — review and trim it if needed.`
+    ? `This note is ${note.length} characters. Google may truncate notes around 1,024 characters on import - review and trim it if needed.`
     : undefined
 }

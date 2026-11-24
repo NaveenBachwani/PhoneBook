@@ -44,7 +44,7 @@ export default function KeySetup({ onReady, onBack }: Props) {
       const status = (err as { status?: number }).status
       if (status === 404 || status === 410) {
         setMessage(
-          'The AI model this app uses is temporarily unavailable at the provider. This usually fixes itself with an app update — please try again later.'
+          'The AI model this app uses is temporarily unavailable at the provider. This usually fixes itself with an app update - please try again later.'
         )
       } else if (status === 429) {
         setMessage('The free tier is busy right now. Wait a minute and try again.')

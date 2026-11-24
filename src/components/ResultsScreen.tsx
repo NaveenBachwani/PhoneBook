@@ -120,7 +120,7 @@ export default function ResultsScreen({
                           {warn && <span className="badge warn" title={warn}>long note</span>}
                         </>
                       ) : (
-                        <span className="muted">—</span>
+                        <span className="muted"> - </span>
                       )}
                       {suggested && (
                         <details>
@@ -129,7 +129,7 @@ export default function ResultsScreen({
                           <button className="small" onClick={() => onApplySuggestion(c.id)}>
                             Use AI note
                           </button>
-                          <span className="muted"> (replaces the current note — you can revert until download)</span>
+                          <span className="muted"> (replaces the current note - you can revert until download)</span>
                         </details>
                       )}
                     </td>
@@ -158,7 +158,7 @@ export default function ResultsScreen({
         {fileNames.length > 1 && (
           <p className="muted">
             Your list is larger than Google's 3,000-per-import limit, so we split it into {fileNames.length} files:
-            {fileNames.map((n) => ` ${n}`).join(',')} — import them one after another.
+            {fileNames.map((n) => ` ${n}`).join(',')} - import them one after another.
           </p>
         )}
         {oversized && (
@@ -166,7 +166,7 @@ export default function ResultsScreen({
             One or more files exceed Google's 20 MB import limit. Consider removing photos and trying again.
           </p>
         )}
-        <p className="muted">The CSV is for viewing in a spreadsheet — do not import it into Google Contacts.</p>
+        <p className="muted">The CSV is for viewing in a spreadsheet - do not import it into Google Contacts.</p>
       </section>
     </>
   )

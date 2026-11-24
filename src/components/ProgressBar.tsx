@@ -15,7 +15,7 @@ export default function ProgressBar({ done, total, batchInfo }: Props) {
         Cleaning {done} of {total} ({pct}%)
       </p>
       {batchInfo && (
-        <p className="muted">{batchInfo} — a batch of contacts can take up to a minute.</p>
+        <p className="muted">{batchInfo} - a batch of contacts can take up to a minute.</p>
       )}
       <p className="muted">
         Click Stop any time: results received so far are kept, the rest stay unchanged.
